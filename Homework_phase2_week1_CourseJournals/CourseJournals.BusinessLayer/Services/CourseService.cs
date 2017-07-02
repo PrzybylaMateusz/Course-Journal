@@ -46,7 +46,6 @@ namespace CourseJournals.BusinessLayer.Services
         public CourseDto GetCourseDataById(string courseId)
         {
             var course = _courseRepository.GetCoursesDataById(Int32.Parse(courseId));
-
             return EntityToDtoMapper.CourseEntityModelToDto(course);
         }
 

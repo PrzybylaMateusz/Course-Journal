@@ -53,6 +53,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CliModule.cs" />
+    <Compile Include="DictionaryOfCommands.cs" />
     <Compile Include="Helpers\ConsoleReadHelper.cs" />
     <Compile Include="Helpers\ConsoleWriteHelper.cs" />
     <Compile Include="IProgramLoop.cs" />

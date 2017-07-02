@@ -7,8 +7,7 @@ using CourseJournals.BusinessLayer.Mappers;
 
 namespace CourseJournals.BusinessLayer.Services
 {
-    public class AttendanceService : IAttendanceService
-    {
+    public class AttendanceService : IAttendanceService{
     
         private IAttendanceRepositores _attendanceRepositores;
 
@@ -17,7 +16,11 @@ namespace CourseJournals.BusinessLayer.Services
             _attendanceRepositores = attendanceRepositores;
         }
 
-      public bool CheckIfDataIsInTheDatabase(DateTime date)
+        public AttendanceService()
+        {
+        }
+
+        public bool CheckIfDataIsInTheDatabase(DateTime date)
         {
             var day = _attendanceRepositores.GetDayInSystem(date);
 

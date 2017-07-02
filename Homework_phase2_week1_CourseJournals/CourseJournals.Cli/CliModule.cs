@@ -13,6 +13,5 @@ namespace CourseJournals.Cli
         {
             Bind<IProgramLoop>().To<ProgramLoop>();
         }
-       
     }
 }

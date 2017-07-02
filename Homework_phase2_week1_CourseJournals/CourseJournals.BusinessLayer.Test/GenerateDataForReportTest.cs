@@ -4,9 +4,9 @@ using CourseJournals.BusinessLayer.Dtos;
 using CourseJournals.BusinessLayer.Services;
 using CourseJournals.DataLayer;
 using CourseJournals.DataLayer.Models;
+using CourseJournals.DataLayer.Repositories;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using CourseJournals.DataLayer.Interfaces;
 
 namespace CourseJournals.BusinessLayer.Test
 {
@@ -14,6 +14,7 @@ namespace CourseJournals.BusinessLayer.Test
     [TestClass]
     public class GenerateDataForReportTest
     {
+
         [TestMethod]
         public void CheckCourseDataIsProperlyGenerated_GetCourseData_ReceiveProperlyCourseData()
         {
@@ -222,7 +223,7 @@ namespace CourseJournals.BusinessLayer.Test
             listOfPresent.Add(present2);
             listOfPresent.Add(present3);
 
-            var attendanceRepositoryMock = new Mock<IAttendanceRepository>();
+            var attendanceRepositoryMock = new Mock<IAttendanceRepositores>();
             attendanceRepositoryMock.Setup(x => x.GetListOfAllPresentsAtCourse(111)).Returns(listOfPresent);
 
             var expectedListOfPresent = new List<ListOfPresentDto>();

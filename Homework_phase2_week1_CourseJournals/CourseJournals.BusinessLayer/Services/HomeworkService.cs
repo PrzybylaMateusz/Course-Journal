@@ -15,6 +15,10 @@ namespace CourseJournals.BusinessLayer.Services
             _homeworkRepository = homeworkRepository;
         }
 
+        public HomeworkService()
+        {
+        }
+
         public bool CheckIfTheHomeworkExists(string name)
         {
             var homework = _homeworkRepository.GetHomeWorkByName(name);

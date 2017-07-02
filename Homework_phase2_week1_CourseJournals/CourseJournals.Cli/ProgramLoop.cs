@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using CourseJournals.Cli.Helpers;
 using CourseJournals.BusinessLayer.Dtos;
 using CourseJournals.BusinessLayer.Services;
+using Ninject.Infrastructure.Language;
 
 namespace CourseJournals.Cli
 {
@@ -13,7 +15,7 @@ namespace CourseJournals.Cli
         private IHomeworkService _homeworkService;
         private IListOfPresentService _listOfPresentService;
         private IStudentService _studentService;
-      
+
         public ProgramLoop(IAttendanceService attendanceService, ICourseService courseService,
             IHomeworkService homeworkService, IListOfPresentService listOfPresentService,
             IStudentService studentService)
@@ -24,37 +26,27 @@ namespace CourseJournals.Cli
             _listOfPresentService = listOfPresentService;
             _studentService = studentService;
         }
-       
+
         public void Execute()
         {
             var exit = false;
             while (!exit)
             {
                 var choice = ConsoleReadHelper.GetCommand("Select number: \n");
+                var dictionaryOfCommand = new DictionaryOfCommands(this);
+                var newDictionary = dictionaryOfCommand.CreateDictionary();
 
-                switch (choice)
+                if (newDictionary.ContainsKey(choice))
                 {
-                    case "1":
-                        AddStudents();
-                        break;
-                    case "2":
-                        AddCourses();
-                        break;
-                    case "3":
-                        ChoosingCourse();
-                        break;
-                    case "4":
-                        PrintAllStudents();
-                        break;
-                    case "5":
-                        EditStudentData();
-                        break;
-                    case "6":
-                        exit = true;
-                        break;
-                    default:
-                        Console.WriteLine("Value '" + choice + "' is invalid - try again");
-                        break;
+                    newDictionary[choice].Invoke();
+                }
+                else if (choice == "6")
+                {
+                    exit = true;
+                }
+                else
+                {
+                    Console.WriteLine("Value '" + choice + "' is invalid - try again");
                 }
             }
         }
@@ -64,7 +56,7 @@ namespace CourseJournals.Cli
             Console.WriteLine("Provide information about the student:\n ");
 
             var student = new StudentDto();
-            
+
             var exit = false;
             while (!exit)
             {
@@ -191,7 +183,7 @@ namespace CourseJournals.Cli
 
 
             Console.WriteLine("List of available courses: ");
-            
+
             var allCourses = _courseService.GetAllCoursesNames();
             if (_courseService.GetAllCoursesNames().Count == 0 || _courseService.GetAllCoursesNames() == null)
             {
@@ -658,7 +650,6 @@ namespace CourseJournals.Cli
                             else if (studentDto.Courses.Exists(s => s.Id == int.Parse(choose)))
                             {
                                 _courseService.RemoveStudentFromCourse(choose, studentDto.Pesel);
-
                             }
                             else
                             {
