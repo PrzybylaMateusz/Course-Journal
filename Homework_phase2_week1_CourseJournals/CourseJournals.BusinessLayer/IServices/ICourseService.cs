@@ -12,5 +12,7 @@ namespace CourseJournals.BusinessLayer.Services
         int GetValidNumbersOfPoints(string numberOfPoints);
         void ChangeCourseData(CourseDto courseDto, string id);
         void RemoveStudentFromCourse(string id, long pesel);
+        ReportDto GetReportInfo(string courseId);
+        void SaveReportDataToFile(ReportDto report);
     }
 }

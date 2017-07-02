@@ -16,6 +16,11 @@ namespace CourseJournals.Cli
         private IListOfPresentService _listOfPresentService;
         private IStudentService _studentService;
 
+        public delegate void GenerateReportFinishedEventHandler(object sender,
+            GenerateReportFinishedEventArgs eventArgs);
+        public event GenerateReportFinishedEventHandler GenerateReportFinished;
+
+
         public ProgramLoop(IAttendanceService attendanceService, ICourseService courseService,
             IHomeworkService homeworkService, IListOfPresentService listOfPresentService,
             IStudentService studentService)
@@ -29,6 +34,8 @@ namespace CourseJournals.Cli
 
         public void Execute()
         {
+            GenerateReportFinished += PrintReportInfo;
+            GenerateReportFinished += AskForReportInfoExport;
             var exit = false;
             while (!exit)
             {
@@ -269,7 +276,7 @@ namespace CourseJournals.Cli
                 var date = ConsoleReadHelper.GetDate("Give a date to check attendance: ");
                 var attendance = new AttendanceDto();
                 var listOfPresent = new ListOfPresentDto();
-                if (_attendanceService.CheckIfDataIsInTheDatabase(date))
+                if (_attendanceService.CheckIfDataIsInTheDatabase(date, courseId))
                 {
                     Console.WriteLine("The given date was checked.");
                 }
@@ -422,49 +429,47 @@ namespace CourseJournals.Cli
         }
         public void PrintReport(string courseId)
         {
-            var reportData = _courseService.GetCourseDataById(courseId);
-            Console.WriteLine("\nCourse ID: " + reportData.Id);
-            Console.WriteLine("Course name: " + reportData.CourseName);
-            Console.WriteLine("Instructor name: " + reportData.InstructorName);
-            Console.WriteLine("Instructor surname: " + reportData.InstructorSurname);
-            Console.WriteLine("Start date: " + reportData.StartDate);
-            Console.WriteLine("Minimal treshold from attendance: " + reportData.MinimalTresholdAttendance);
-            Console.WriteLine("Minimal treshold from homeworks: " + reportData.MinimalTresholdHomework);
-            Console.WriteLine("Number of students: " + reportData.NumbersOfStudents);
+            var report = _courseService.GetReportInfo(courseId);
+            OnGenerateReportFinished(report);
+        }
 
-            Console.WriteLine("Attendance results: ");
-            var studentsFromCourse = _studentService.GetStudentsList(courseId);
+        private void OnGenerateReportFinished(ReportDto report)
+        {
+            if (GenerateReportFinished == null)
+            {
+                return;
+            }
+            var eventArgs = new GenerateReportFinishedEventArgs();
+            eventArgs.ReportDto = report;
+
+            GenerateReportFinished(this, eventArgs);
+        }
+
+
+        private void PrintReportInfo(object sender, GenerateReportFinishedEventArgs eventArgs)
+        {
+            var report = eventArgs.ReportDto;
+            Console.WriteLine($"Id: {report.CourseInfo.Id}\nCourse name: {report.CourseInfo.CourseName}\n" +
+                              $"Instructor name: {report.CourseInfo.InstructorName}\n" +
+                              $"Instructor surname: {report.CourseInfo.InstructorSurname}\n " +
+                              $"Start date: {report.CourseInfo.StartDate}\n" +
+                              $"Number of students: {report.CourseInfo.NumbersOfStudents}\n" +
+                              $"Min. number of percents from attendances: {report.CourseInfo.MinimalTresholdAttendance}\n" +
+                              $"Min. number of percents from homeworks: {report.CourseInfo.MinimalTresholdHomework}");
+
+            Console.WriteLine("\n\nAttendance results: ");
+
+
+            var studentsFromCourse = _studentService.GetStudentsList(report.CourseInfo.Id.ToString());
             if (studentsFromCourse.Count != 0)
             {
-                var listOfAllDaysOfCourses = _attendanceService.GetAttendanceList(courseId);
-                double daysNumber = _attendanceService.CountDaysNumber(listOfAllDaysOfCourses);
-
-                if (daysNumber != 0)
+                foreach (var result in report.AttendanceResults)
                 {
-                    foreach (var student in studentsFromCourse)
-                    {
-                        var asd = _attendanceService.GetMeListOfPresents(student.Pesel);
-
-                        double numberOfPoints = _attendanceService.AttendancePoints(student.Pesel, asd, listOfAllDaysOfCourses);
-
-                        double procenteAttendance =
-                            _attendanceService.CalculateProcenteAttendance(daysNumber, numberOfPoints);
-                        Console.WriteLine("\n" + student.Name + " " + student.Surname + " " + student.Pesel);
-                        Console.WriteLine(numberOfPoints + "/" + daysNumber + "(" +
-                                          procenteAttendance + "%)");
-                        if (procenteAttendance > reportData.MinimalTresholdAttendance)
-                        {
-                            Console.WriteLine(" - Passed");
-                        }
-                        else
-                        {
-                            Console.WriteLine(" - Failed");
-                        }
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("Attendance has not been checked. ");
+                    Console.WriteLine($"\n\nStudent info: {result.StudentsInfo}\n" +
+                                      $"Points from attendance: {result.AttendancePoints}\n" +
+                                      $"Max points: {result.MaxAttendancePoints}\n" +
+                                      $"Points in percentage: {result.AttendancePercents}\n" +
+                                      $"Ressult: {result.Results}");
                 }
             }
             else
@@ -472,42 +477,39 @@ namespace CourseJournals.Cli
                 Console.WriteLine("No students assigned to the course");
             }
 
-            Console.WriteLine("Homework results: ");
+            Console.WriteLine("\n\nHomework results: ");
             if (studentsFromCourse.Count != 0)
             {
-                var listOfHomeworks = _homeworkService.GetListOfHomework(courseId);
-                var maxHomeworkPoints = _homeworkService.MaxPoints(listOfHomeworks);
-
-                if (maxHomeworkPoints != 0.0d)
+                foreach (var result in report.HomeworkResults)
                 {
-                    foreach (var student in studentsFromCourse)
-                    {
-                        var listOfHomeworksMarks = _homeworkService.GetListOfHomeworkMarks(student.Pesel);
-                        var studentsHomeworkPoints =
-                            _homeworkService.CalculateStudentHomeworkPoints(listOfHomeworks, student.Pesel, listOfHomeworksMarks);
-                        double procentHomework = (studentsHomeworkPoints / maxHomeworkPoints) * 100;
-                        Console.WriteLine("\n" + student.Name + " " + student.Surname + " " + student.Pesel);
-                        Console.WriteLine(studentsHomeworkPoints + "/" + maxHomeworkPoints +
-                                          " (" + procentHomework + ")");
-                        if (procentHomework > reportData.MinimalTresholdHomework)
-                        {
-                            Console.WriteLine(" - Passed");
-                        }
-                        else
-                        {
-                            Console.WriteLine(" - Failed");
-                        }
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("No homework has been checked!");
+                    Console.WriteLine($"\nStudent info: {result.StudentsInfo}\n" +
+                                      $"Points from attendance: {result.HomeworkPoints}\n" +
+                                      $"Max points: {result.MaxHomeworkPoints}\n" +
+                                      $"Points in percentage: {result.HomeworkPercents}\n" +
+                                      $"Ressult: {result.Results}\n\n");
                 }
             }
             else
             {
                 Console.WriteLine("No students assigned to the course");
             }
+        }
+
+        public void AskForReportInfoExport(object sender, GenerateReportFinishedEventArgs eventargs)
+        {
+
+            Console.WriteLine("Do you want to export report data to files? (Y/N)");
+            var choice = Console.ReadLine();
+            while (choice != "Y" && choice != "N")
+            {
+                Console.WriteLine("Invalid value - try again!");
+                choice = Console.ReadLine();
+            }
+            if (choice == "Y")
+            {
+                _courseService.SaveReportDataToFile(eventargs.ReportDto);
+            }
+
         }
 
         public void EditCourseData(string id)

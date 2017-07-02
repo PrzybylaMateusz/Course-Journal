@@ -6,7 +6,7 @@ namespace CourseJournals.BusinessLayer.Services
 {
     public interface IAttendanceService
     {
-        bool CheckIfDataIsInTheDatabase(DateTime date);
+        bool CheckIfDataIsInTheDatabase(DateTime date, string Id);
         bool CheckIfPresentIsCorrectValue(string present);
         bool AddAttendance(AttendanceDto attendanceDto);
         List<AttendanceDto> GetAttendanceList(string courseId);

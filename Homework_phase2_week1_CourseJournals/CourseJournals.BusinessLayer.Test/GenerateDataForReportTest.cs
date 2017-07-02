@@ -15,46 +15,46 @@ namespace CourseJournals.BusinessLayer.Test
     public class GenerateDataForReportTest
     {
 
-        [TestMethod]
-        public void CheckCourseDataIsProperlyGenerated_GetCourseData_ReceiveProperlyCourseData()
-        {
-            var course = new Course();
-            course.Id = 121;
-            course.CourseName = "CodementorsCourse";
-            course.InstructorName = "Jan";
-            course.InstructorSurname = "Kowalski";
-            course.MinimalTresholdAttendance = 80;
-            course.MinimalTresholdHomework = 80;
-            course.NumbersOfStudents = 2;
-            course.StartDate = new DateTime(05 / 05 / 2017);
+        //[TestMethod]
+        //public void CheckCourseDataIsProperlyGenerated_GetCourseData_ReceiveProperlyCourseData()
+        //{
+        //    var course = new Course();
+        //    course.Id = 121;
+        //    course.CourseName = "CodementorsCourse";
+        //    course.InstructorName = "Jan";
+        //    course.InstructorSurname = "Kowalski";
+        //    course.MinimalTresholdAttendance = 80;
+        //    course.MinimalTresholdHomework = 80;
+        //    course.NumbersOfStudents = 2;
+        //    course.StartDate = new DateTime(05 / 05 / 2017);
 
-            var courseRepositoryMock = new Mock<ICoursesRepository>();
-            courseRepositoryMock.Setup(x => x.GetCoursesDataById(121)).Returns(course);
+        //    var courseRepositoryMock = new Mock<ICoursesRepository>();
+        //    courseRepositoryMock.Setup(x => x.GetCoursesDataById(121)).Returns(course);
 
-            var expectedCourseDto = new CourseDto();
-            expectedCourseDto.Id = 121;
-            expectedCourseDto.CourseName = "CodementorsCourse";
-            expectedCourseDto.InstructorName = "Jan";
-            expectedCourseDto.InstructorSurname = "Kowalski";
-            expectedCourseDto.MinimalTresholdAttendance = 80;
-            expectedCourseDto.MinimalTresholdHomework = 80;
-            expectedCourseDto.NumbersOfStudents = 2;
-            expectedCourseDto.StartDate = new DateTime(05 / 05 / 2017);
+        //    var expectedCourseDto = new CourseDto();
+        //    expectedCourseDto.Id = 121;
+        //    expectedCourseDto.CourseName = "CodementorsCourse";
+        //    expectedCourseDto.InstructorName = "Jan";
+        //    expectedCourseDto.InstructorSurname = "Kowalski";
+        //    expectedCourseDto.MinimalTresholdAttendance = 80;
+        //    expectedCourseDto.MinimalTresholdHomework = 80;
+        //    expectedCourseDto.NumbersOfStudents = 2;
+        //    expectedCourseDto.StartDate = new DateTime(05 / 05 / 2017);
 
-            string courseId = "121";
+        //    string courseId = "121";
 
-            var courseService = new CourseService(courseRepositoryMock.Object);
-            var result = courseService.GetCourseDataById(courseId);
+        //    var courseService = new CourseService(courseRepositoryMock.Object);
+        //    var result = courseService.GetCourseDataById(courseId);
 
-            Assert.AreEqual(expectedCourseDto.Id, result.Id);
-            Assert.AreEqual(expectedCourseDto.CourseName, result.CourseName);
-            Assert.AreEqual(expectedCourseDto.InstructorName, result.InstructorName);
-            Assert.AreEqual(expectedCourseDto.InstructorSurname, result.InstructorSurname);
-            Assert.AreEqual(expectedCourseDto.MinimalTresholdAttendance, result.MinimalTresholdAttendance);
-            Assert.AreEqual(expectedCourseDto.MinimalTresholdHomework, result.MinimalTresholdHomework);
-            Assert.AreEqual(expectedCourseDto.NumbersOfStudents, result.NumbersOfStudents);
-            Assert.AreEqual(expectedCourseDto.StartDate, result.StartDate);
-        }
+        //    Assert.AreEqual(expectedCourseDto.Id, result.Id);
+        //    Assert.AreEqual(expectedCourseDto.CourseName, result.CourseName);
+        //    Assert.AreEqual(expectedCourseDto.InstructorName, result.InstructorName);
+        //    Assert.AreEqual(expectedCourseDto.InstructorSurname, result.InstructorSurname);
+        //    Assert.AreEqual(expectedCourseDto.MinimalTresholdAttendance, result.MinimalTresholdAttendance);
+        //    Assert.AreEqual(expectedCourseDto.MinimalTresholdHomework, result.MinimalTresholdHomework);
+        //    Assert.AreEqual(expectedCourseDto.NumbersOfStudents, result.NumbersOfStudents);
+        //    Assert.AreEqual(expectedCourseDto.StartDate, result.StartDate);
+        //}
 
         [TestMethod]
         public void CheckStudentListIsProperlyGenereted_GetStudentList_ReceiveProperlyStudentList()

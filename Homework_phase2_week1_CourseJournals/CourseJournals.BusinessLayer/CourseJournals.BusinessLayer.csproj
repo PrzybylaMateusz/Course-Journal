@@ -30,6 +30,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="Ninject, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
       <HintPath>..\packages\Ninject.3.2.2.0\lib\net45-full\Ninject.dll</HintPath>
     </Reference>
@@ -45,10 +48,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Dtos\AttendanceDto.cs" />
+    <Compile Include="Dtos\AttendanceResultDto.cs" />
     <Compile Include="Dtos\CourseDto.cs" />
     <Compile Include="Dtos\HomeworkDto.cs" />
     <Compile Include="Dtos\HomeworkMarksDto.cs" />
+    <Compile Include="Dtos\HomeworkResultDto.cs" />
     <Compile Include="Dtos\ListOfPresentDto.cs" />
+    <Compile Include="Dtos\ReportDto.cs" />
     <Compile Include="Dtos\StudentDto.cs" />
     <Compile Include="RepositoriesModules.cs" />
     <Compile Include="ServicesModule.cs" />

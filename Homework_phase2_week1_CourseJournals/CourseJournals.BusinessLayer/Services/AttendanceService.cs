@@ -20,16 +20,22 @@ namespace CourseJournals.BusinessLayer.Services
         {
         }
 
-        public bool CheckIfDataIsInTheDatabase(DateTime date)
+        public bool CheckIfDataIsInTheDatabase(DateTime date, string Id)
         {
             var day = _attendanceRepositores.GetDayInSystem(date);
-
+            
             if (day == null || day.Count == 0)
             {
                 return false;
             }
-
-            return true;
+            foreach (var d in day)
+            {
+                if (d.Id == int.Parse(Id))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
         public bool CheckIfPresentIsCorrectValue(string present)
         {

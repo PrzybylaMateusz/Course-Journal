@@ -1,19 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using CourseJournals.BusinessLayer.Dtos;
 using CourseJournals.BusinessLayer.Mappers;
 using CourseJournals.DataLayer;
 using CourseJournals.DataLayer.Repositories;
+using Newtonsoft.Json;
 
 namespace CourseJournals.BusinessLayer.Services
 {
     public class CourseService : ICourseService
     {
         private ICoursesRepository _courseRepository;
+        private IStudentService _studentService;
+        private IAttendanceService _attendanceService;
+        private IHomeworkService _homeworkService;
 
-        public CourseService(ICoursesRepository coursesRepository)
+        public CourseService(ICoursesRepository coursesRepository, IStudentService studentService,
+            IAttendanceService attendanceService, IHomeworkService homeworkService)
         {
             _courseRepository = coursesRepository;
+            _studentService = studentService;
+            _attendanceService = attendanceService;
+            _homeworkService = homeworkService;
+        }
+
+        public void SaveReportDataToFile(ReportDto report)
+        {
+            string filepath = Environment.CurrentDirectory + "report.json";
+            File.WriteAllText(filepath, JsonConvert.SerializeObject(report));
         }
 
         public bool AddCourse(CourseDto courseDto)
@@ -81,6 +96,66 @@ namespace CourseJournals.BusinessLayer.Services
         public void RemoveStudentFromCourse(string id, long pesel)
         {
             _courseRepository.RemoveStudentFromCourse(Int32.Parse(id), pesel);
+        }
+
+        public ReportDto GetReportInfo(string courseId)
+        {
+            var report = new ReportDto();
+            report.CourseInfo = GetCourseDataById(courseId);
+            var attendanceList = new List<AttendanceResultDto>();
+            var listOfAttendance = _attendanceService.GetAttendanceList(courseId);
+            var studentFromCourse = _studentService.GetStudentsList(courseId);
+            var maxPoints = _attendanceService.CountDaysNumber(listOfAttendance);
+
+            foreach (var student in studentFromCourse)
+            {
+                var attendance = new AttendanceResultDto();
+                attendance.StudentsInfo = student.Name + " " + student.Surname + " " + student.Pesel;
+                var listOfPresent = _attendanceService.GetMeListOfPresents(student.Pesel);
+                attendance.AttendancePoints =
+                    _attendanceService.AttendancePoints(student.Pesel, listOfPresent, listOfAttendance);
+                attendance.MaxAttendancePoints = maxPoints;
+                attendance.AttendancePercents =
+                    _attendanceService.CalculateProcenteAttendance(attendance.MaxAttendancePoints,
+                        attendance.AttendancePoints);
+                if (attendance.AttendancePercents > report.CourseInfo.MinimalTresholdAttendance)
+                {
+                    attendance.Results = "Passed";
+                }
+                else
+                {
+                    attendance.Results = "Failed";
+                }
+                attendanceList.Add(attendance);
+            }
+            report.AttendanceResults = attendanceList;
+
+            var homewrokList = new List<HomeworkResultDto>();
+            var listOfHomeworks = _homeworkService.GetListOfHomework(courseId);
+            var maxHomeworkPoints = _homeworkService.MaxPoints(listOfHomeworks);
+            foreach (var student in studentFromCourse)
+            {
+                var homework = new HomeworkResultDto();
+                homework.StudentsInfo = student.Name + " " + student.Surname + " " + student.Pesel;
+                var listOfHomeworkMarks = _homeworkService.GetListOfHomeworkMarks(student.Pesel);
+                homework.HomeworkPoints =
+                    _homeworkService.CalculateStudentHomeworkPoints(listOfHomeworks, student.Pesel,
+                        listOfHomeworkMarks);
+                homework.MaxHomeworkPoints = maxHomeworkPoints;
+                homework.HomeworkPercents = homework.HomeworkPoints / homework.MaxHomeworkPoints * 100;
+                if (homework.HomeworkPercents > report.CourseInfo.MinimalTresholdHomework)
+                {
+                    homework.Results = "Passed";
+                }
+                else
+                {
+                    homework.Results = "Failed";
+                }
+                homewrokList.Add(homework);
+            }
+            report.HomeworkResults = homewrokList;
+
+            return report;
         }
     }
 }
