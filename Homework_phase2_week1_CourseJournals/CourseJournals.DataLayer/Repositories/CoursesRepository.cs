@@ -3,6 +3,7 @@ using System.Linq;
 using CourseJournals.DataLayer.DbContexts;
 using CourseJournals.DataLayer.Models;
 using System.Data.Entity;
+using CourseJournals.DataLayer.Interfaces;
 
 namespace CourseJournals.DataLayer.Repositories
 {

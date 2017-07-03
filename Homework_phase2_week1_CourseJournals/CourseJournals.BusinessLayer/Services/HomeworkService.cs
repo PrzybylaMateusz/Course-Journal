@@ -2,14 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using CourseJournals.BusinessLayer.Dtos;
+using CourseJournals.BusinessLayer.IServices;
 using CourseJournals.BusinessLayer.Mappers;
+using CourseJournals.DataLayer.Interfaces;
 using CourseJournals.DataLayer.Repositories;
 
 namespace CourseJournals.BusinessLayer.Services
 {
     public class HomeworkService : IHomeworkService
     {
-        private IHomeworkRepository _homeworkRepository;
+        private readonly IHomeworkRepository _homeworkRepository;
         public HomeworkService(IHomeworkRepository homeworkRepository)
         {
             _homeworkRepository = homeworkRepository;
@@ -33,19 +35,13 @@ namespace CourseJournals.BusinessLayer.Services
 
         public List<HomeworkDto> GetListOfHomework(string courseId)
         {
-            var list = _homeworkRepository.GetHomeWorkByCourseId(Int32.Parse(courseId));
-            return list.Select(record => EntityToDtoMapper.HomeworkEntityModelToDto(record)).ToList();
+            var list = _homeworkRepository.GetHomeWorkByCourseId(int.Parse(courseId));
+            return list.Select(EntityToDtoMapper.HomeworkEntityModelToDto).ToList();
         }
 
         public double MaxPoints(List<HomeworkDto> listOfHomeworks)
         {
-            double maxPoints = 0;
-            foreach (var record in listOfHomeworks)
-            {
-                var i = record.MaxPoints;
-                maxPoints = maxPoints + i;
-            }
-            return maxPoints;
+            return listOfHomeworks.Select(record => record.MaxPoints).Aggregate<double, double>(0, (current, i) => current + i);
         }
 
         public double CalculateStudentHomeworkPoints(List<HomeworkDto> listOfHomeworks, long pesel, List<HomeworkMarksDto> list)
@@ -86,14 +82,8 @@ namespace CourseJournals.BusinessLayer.Services
 
         public List<HomeworkMarksDto> GetListOfHomeworkMarks(long pesel)
         {
-            var listOfHomeworkMarks = new List<HomeworkMarksDto>();
             var list = _homeworkRepository.GetHomeWorkMarksByPesel(pesel);
-            foreach (var record in list)
-            {
-                var homeworkMarksDto = EntityToDtoMapper.HomeworkMarksEntityModelToDto(record);
-                listOfHomeworkMarks.Add(homeworkMarksDto);
-            }
-            return listOfHomeworkMarks;
+            return list.Select(EntityToDtoMapper.HomeworkMarksEntityModelToDto).ToList();
         }
     }
 }

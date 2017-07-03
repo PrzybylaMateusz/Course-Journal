@@ -1,12 +1,14 @@
 ﻿using CourseJournals.BusinessLayer.Dtos;
+using CourseJournals.BusinessLayer.IServices;
 using CourseJournals.BusinessLayer.Mappers;
+using CourseJournals.DataLayer.Interfaces;
 using CourseJournals.DataLayer.Repositories;
 
 namespace CourseJournals.BusinessLayer.Services
 {
     public class ListOfPresentService : IListOfPresentService
     {
-        private IListOfPresentRepository _listOfPresentRepository;
+        private readonly IListOfPresentRepository _listOfPresentRepository;
 
         public ListOfPresentService(IListOfPresentRepository listOfPresentRepository)
         {

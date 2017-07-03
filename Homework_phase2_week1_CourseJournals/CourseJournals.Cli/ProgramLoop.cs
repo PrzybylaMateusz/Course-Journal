@@ -1,20 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using CourseJournals.Cli.Helpers;
 using CourseJournals.BusinessLayer.Dtos;
-using CourseJournals.BusinessLayer.Services;
-using Ninject.Infrastructure.Language;
+using CourseJournals.BusinessLayer.IServices;
 
 namespace CourseJournals.Cli
 {
     internal class ProgramLoop : IProgramLoop
     {
-        private IAttendanceService _attendanceService;
-        private ICourseService _courseService;
-        private IHomeworkService _homeworkService;
-        private IListOfPresentService _listOfPresentService;
-        private IStudentService _studentService;
+        private readonly IAttendanceService _attendanceService;
+        private readonly ICourseService _courseService;
+        private readonly IHomeworkService _homeworkService;
+        private readonly IListOfPresentService _listOfPresentService;
+        private readonly IStudentService _studentService;
 
         public delegate void GenerateReportFinishedEventHandler(object sender,
             GenerateReportFinishedEventArgs eventArgs);
@@ -67,7 +65,7 @@ namespace CourseJournals.Cli
             var exit = false;
             while (!exit)
             {
-                long pesel = ConsoleReadHelper.GetLong("Personal ID number: ");
+                var pesel = ConsoleReadHelper.GetLong("Personal ID number: ");
                 if (!_studentService.CheckIfStudentsIsInTheDatabaseByPesel(pesel))
                 {
                     student.Pesel = pesel;
@@ -149,7 +147,7 @@ namespace CourseJournals.Cli
             var exit1 = false;
             while (!exit1)
             {
-                long pesel = ConsoleReadHelper.GetLong("\nGive student's ID number you want to add to the course: ");
+                var pesel = ConsoleReadHelper.GetLong("\nGive student's ID number you want to add to the course: ");
                 if (!_studentService.CheckIfStudentsIsInTheDatabaseByPesel(pesel))
                 {
                     Console.WriteLine("\n No student with a given pesel in the database or incorrect data entered");
@@ -163,11 +161,9 @@ namespace CourseJournals.Cli
                     else
                     {
                         course.Students.Add(_studentService.GetStudentData(pesel));
-                        if (course.Students.Count == course.NumbersOfStudents)
-                        {
-                            Console.WriteLine("\nThe maximum number of students was reached!");
-                            exit1 = true;
-                        }
+                        if (course.Students.Count != course.NumbersOfStudents) continue;
+                        Console.WriteLine("\nThe maximum number of students was reached!");
+                        exit1 = true;
                     }
                 }
             }
@@ -187,10 +183,7 @@ namespace CourseJournals.Cli
         public void ChoosingCourse()
         {
             Console.WriteLine();
-
-
             Console.WriteLine("List of available courses: ");
-
             var allCourses = _courseService.GetAllCoursesNames();
             if (_courseService.GetAllCoursesNames().Count == 0 || _courseService.GetAllCoursesNames() == null)
             {
@@ -207,21 +200,14 @@ namespace CourseJournals.Cli
                         Console.WriteLine(course.Key + " " + course.Value);
                     }
                     Console.Write("Select a course from the list above. Enter the course ID: ");
-                    try
+                    courseId = Console.ReadLine();
+                    if (!string.IsNullOrEmpty(courseId) && _courseService.CheckIfCourseIsInTheDatabaseById(int.Parse(courseId)))
                     {
-                        courseId = Console.ReadLine();
-                        if (_courseService.CheckIfCourseIsInTheDatabaseById(Int32.Parse(courseId)))
-                        {
-                            ConsoleWriteHelper.PrintCourseOperations(courseId);
-                            exit = true;
+                        ConsoleWriteHelper.PrintCourseOperations(courseId);
+                        exit = true;
 
-                        }
-                        else
-                        {
-                            Console.WriteLine("\nWrong course ID - try again!\n");
-                        }
                     }
-                    catch
+                    else
                     {
                         Console.WriteLine("\nWrong course ID - try again!\n");
                     }
@@ -229,7 +215,7 @@ namespace CourseJournals.Cli
                 var exit1 = false;
                 while (!exit1)
                 {
-                    string choose = Console.ReadLine();
+                    var choose = Console.ReadLine();
                     switch (choose)
                     {
                         case "1":
@@ -302,7 +288,7 @@ namespace CourseJournals.Cli
                         var correct = false;
                         while (!correct)
                         {
-                            string present = Console.ReadLine();
+                            var present = Console.ReadLine();
                             if (_attendanceService.CheckIfPresentIsCorrectValue(present))
                             {
                                 listOfPresent.Attendance = _attendanceService.Attendance(courseId, date);
@@ -341,7 +327,7 @@ namespace CourseJournals.Cli
                 var nameOfHomework = Console.ReadLine();
                 if (nameOfHomework == "exit")
                     return;
-                else if (_homeworkService.CheckIfTheHomeworkExists(nameOfHomework))
+                if (_homeworkService.CheckIfTheHomeworkExists(nameOfHomework))
                 {
                     Console.WriteLine("Homework with the given name exists. " +
                                       "Provide another name for homework or return to the main menu ('exit')");
@@ -355,8 +341,16 @@ namespace CourseJournals.Cli
                         try
                         {
                             Console.WriteLine("Maximum number of points: ");
-                            homework.MaxPoints = double.Parse(Console.ReadLine());
-                            done = true;
+                            var number = Console.ReadLine();
+                            if (string.IsNullOrEmpty(number))
+                            {
+                                Console.WriteLine("Fild can not be empty. Try again!");
+                            }
+                            else
+                            {
+                                homework.MaxPoints = double.Parse(number);
+                                done = true;
+                            }
                         }
                         catch
                         {
@@ -391,18 +385,26 @@ namespace CourseJournals.Cli
                         {
                             try
                             {
-                                double homeworkPoints = double.Parse(Console.ReadLine());
-                                if (homeworkPoints <= homework.MaxPoints && homeworkPoints >= 0)
+                                var points = Console.ReadLine();
+                                if (string.IsNullOrEmpty(points))
                                 {
-                                    homeworkMarks.HomeworkPoints = homeworkPoints;
-                                    working = true;
+                                    Console.WriteLine("Field can not be empty. Try again!");
                                 }
                                 else
                                 {
-                                    Console.WriteLine("Number of points can not be greater " +
-                                                      "than the maxium and must not be less than zero." +
-                                                      " Try again.\nNumber of homework points" +
-                                                      "by the student: ");
+                                    var homeworkPoints = double.Parse(points);
+                                    if (homeworkPoints <= homework.MaxPoints && homeworkPoints >= 0)
+                                    {
+                                        homeworkMarks.HomeworkPoints = homeworkPoints;
+                                        working = true;
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("Number of points can not be greater " +
+                                                          "than the maxium and must not be less than zero." +
+                                                          " Try again.\nNumber of homework points" +
+                                                          "by the student: ");
+                                    }
                                 }
                             }
                             catch
@@ -439,8 +441,7 @@ namespace CourseJournals.Cli
             {
                 return;
             }
-            var eventArgs = new GenerateReportFinishedEventArgs();
-            eventArgs.ReportDto = report;
+            var eventArgs = new GenerateReportFinishedEventArgs { ReportDto = report };
 
             GenerateReportFinished(this, eventArgs);
         }
@@ -483,7 +484,7 @@ namespace CourseJournals.Cli
                 foreach (var result in report.HomeworkResults)
                 {
                     Console.WriteLine($"\nStudent info: {result.StudentsInfo}\n" +
-                                      $"Points from attendance: {result.HomeworkPoints}\n" +
+                                      $"Points from homework: {result.HomeworkPoints}\n" +
                                       $"Max points: {result.MaxHomeworkPoints}\n" +
                                       $"Points in percentage: {result.HomeworkPercents}\n" +
                                       $"Ressult: {result.Results}\n\n");
@@ -516,7 +517,7 @@ namespace CourseJournals.Cli
         {
             var newCourseDto = new CourseDto();
 
-            CourseDto courseDto = _courseService.GetCourseDataById(id);
+            var courseDto = _courseService.GetCourseDataById(id);
             Console.WriteLine("Enter current course data, or leave blank fields to keep the current data.\n");
 
             Console.Write("Course name: " + courseDto.CourseName + "   New course name: ");
@@ -597,8 +598,8 @@ namespace CourseJournals.Cli
                 }
                 else
                 {
-                    StudentDto newStudentDto = new StudentDto();
-                    StudentDto studentDto = _studentService.GetStudentData(studentPesel);
+                    var newStudentDto = new StudentDto();
+                    var studentDto = _studentService.GetStudentData(studentPesel);
 
                     Console.WriteLine("Enter current student data, or leave blank fields to keep the current data.\n");
 
@@ -628,7 +629,7 @@ namespace CourseJournals.Cli
                     var exit1 = false;
                     while (!exit1)
                     {
-                        StudentDto studentDto2 = _studentService.GetStudentData(studentPesel);
+                        var studentDto2 = _studentService.GetStudentData(studentPesel);
                         Console.WriteLine("List of student courses: \n");
                         foreach (var course in studentDto2.Courses)
                         {
@@ -649,9 +650,15 @@ namespace CourseJournals.Cli
                                 exit = true;
                                 exit1 = true;
                             }
+                            else if (string.IsNullOrEmpty(choose))
+                            {
+                                Console.WriteLine("The field can not be empty");
+
+                            }
                             else if (studentDto.Courses.Exists(s => s.Id == int.Parse(choose)))
                             {
                                 _courseService.RemoveStudentFromCourse(choose, studentDto.Pesel);
+                                Console.WriteLine("\n\n Student has been removed from course {0}\n\n", choose);
                             }
                             else
                             {

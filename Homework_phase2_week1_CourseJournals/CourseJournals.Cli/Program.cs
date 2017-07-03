@@ -1,5 +1,5 @@
 ﻿using CourseJournals.BusinessLayer;
-using CourseJournals.BusinessLayer.Services;
+using CourseJournals.BusinessLayer.Modules;
 using Ninject;
 
 namespace CourseJournals.Cli
@@ -8,8 +8,6 @@ namespace CourseJournals.Cli
     {
         private static void Main()
         {
-
-
             IKernel kernel = new StandardKernel(new ServicesModule(), new CliModule(),
                 new RepositoriesModule());
             kernel.Get<ProgramLoop>().Execute();

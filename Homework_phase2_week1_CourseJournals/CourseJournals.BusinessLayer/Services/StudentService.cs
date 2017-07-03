@@ -1,14 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using CourseJournals.BusinessLayer.Dtos;
+using CourseJournals.BusinessLayer.IServices;
 using CourseJournals.BusinessLayer.Mappers;
+using CourseJournals.DataLayer.Interfaces;
 using CourseJournals.DataLayer.Repositories;
 
 namespace CourseJournals.BusinessLayer.Services
 {
     public class StudentService : IStudentService
     {
-        private IStudentsRepository _studentsRepository;
+        private readonly IStudentsRepository _studentsRepository;
 
         public StudentService(IStudentsRepository studentsRepository)
         {
@@ -46,26 +49,14 @@ namespace CourseJournals.BusinessLayer.Services
 
         public List<StudentDto> GetStudentsList(string courseId)
         {
-            var courseStudents = new List<StudentDto>();
-            var studentOnCourse = _studentsRepository.GetStudents(Int32.Parse(courseId));
-            foreach (var student in studentOnCourse)
-            {
-                StudentDto studentDto = EntityToDtoMapper.StudentEntityModelToDto(student);
-                courseStudents.Add(studentDto);
-            }
-            return courseStudents;
+            var studentOnCourse = _studentsRepository.GetStudents(int.Parse(courseId));
+            return studentOnCourse.Select(EntityToDtoMapper.StudentEntityModelToDto).ToList();
         }
 
         public List<StudentDto> GetAllStudentsList()
         {
-            var allStudentList = new List<StudentDto>();
             var allStudentListEntity = _studentsRepository.GetAllStudents();
-            foreach (var student in allStudentListEntity)
-            {
-                StudentDto studentDto = EntityToDtoMapper.StudentEntityModelToDto(student);
-                allStudentList.Add(studentDto);
-            }
-            return allStudentList;
+            return allStudentListEntity.Select(EntityToDtoMapper.StudentEntityModelToDto).ToList();
         }
 
         public DateTime GetDate(string newBirthdate)

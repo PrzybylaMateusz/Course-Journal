@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using CourseJournals.BusinessLayer.Dtos;
 using CourseJournals.DataLayer.Models;
 
 namespace CourseJournals.BusinessLayer.Mappers
 {
-   public class EntityToDtoMapper
+    public class EntityToDtoMapper
     {
         public static CourseDto CourseEntityModelToDto(Course course)
         {
@@ -29,16 +30,7 @@ namespace CourseJournals.BusinessLayer.Mappers
 
         public static List<StudentDto> ListOfStudentToListOfStudentDto(List<Student> listStudent)
         {
-            if (listStudent == null)
-            {
-                return null;
-            }
-            List<StudentDto> list = new List<StudentDto>();
-            foreach (var student in listStudent)
-            {
-                list.Add(StudentEntityModelToDto(student));
-            }
-            return list;
+            return listStudent?.Select(StudentEntityModelToDto).ToList();
         }
 
         public static StudentDto StudentEntityModelToDto(Student student)
@@ -60,16 +52,7 @@ namespace CourseJournals.BusinessLayer.Mappers
 
         public static List<CourseDto> ListOfCoursesToListOfCoursesDto(List<Course> listCourse)
         {
-            if (listCourse == null)
-            {
-                return null;
-            }
-            List<CourseDto> list = new List<CourseDto>();
-            foreach (var course in listCourse)
-            {
-                list.Add(CourseEntityModelToDto(course));
-            }
-            return list;
+            return listCourse?.Select(CourseEntityModelToDto).ToList();
         }
 
         public static AttendanceDto AttendanceEntityModelToDto(Attendance attendance)
@@ -87,7 +70,7 @@ namespace CourseJournals.BusinessLayer.Mappers
             return attendanceDto;
         }
 
-        public static ListOfPresentDto ListOfPresentsEntityModelToDto (ListOfPresent listOfPresent)
+        public static ListOfPresentDto ListOfPresentsEntityModelToDto(ListOfPresent listOfPresent)
         {
             if (listOfPresent == null)
             {

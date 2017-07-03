@@ -56,8 +56,8 @@
     <Compile Include="Dtos\ListOfPresentDto.cs" />
     <Compile Include="Dtos\ReportDto.cs" />
     <Compile Include="Dtos\StudentDto.cs" />
-    <Compile Include="RepositoriesModules.cs" />
-    <Compile Include="ServicesModule.cs" />
+    <Compile Include="Modules\RepositoriesModules.cs" />
+    <Compile Include="Modules\ServicesModule.cs" />
     <Compile Include="Mappers\DtoToEntityMapper.cs" />
     <Compile Include="Mappers\EntityToDtoMapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

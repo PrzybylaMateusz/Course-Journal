@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
 using CourseJournals.DataLayer.DbContexts;
+using CourseJournals.DataLayer.Interfaces;
 using CourseJournals.DataLayer.Models;
 
 namespace CourseJournals.DataLayer.Repositories
@@ -36,7 +36,7 @@ namespace CourseJournals.DataLayer.Repositories
             Student student;
             using (var dbContext = new CourseJournalsDbContext())
             {
-                var studentList = dbContext.StudentsDbSet.Include(c=>c.Courses).ToList();
+                var studentList = dbContext.StudentsDbSet.Include(c => c.Courses).ToList();
                 student = studentList.First(x => x.Pesel == pesel);
             }
             return student;
@@ -50,10 +50,7 @@ namespace CourseJournals.DataLayer.Repositories
                 var students = dbContext.StudentsDbSet.ToList();
                 foreach (var student in students)
                 {
-                    foreach (var course in student.Courses)
-                    {
-                        courseStudents.Add(course.Id == Int32.Parse(courseId) ? student : null);
-                    }
+                    courseStudents.AddRange(student.Courses.Select(course => course.Id == int.Parse(courseId) ? student : null));
                 }
             }
             return courseStudents;
@@ -66,10 +63,7 @@ namespace CourseJournals.DataLayer.Repositories
             {
                 foreach (var student in dbContext.CoursesDbSet.Where(a => a.Id == id).Include(c => c.Students))
                 {
-                    foreach (var stud in student.Students)
-                    {
-                        list.Add(stud);
-                    }
+                    list.AddRange(student.Students);
                 }
             }
             return list;
@@ -80,10 +74,7 @@ namespace CourseJournals.DataLayer.Repositories
             var list = new List<Student>();
             using (var dbContext = new CourseJournalsDbContext())
             {
-                foreach (var student in dbContext.StudentsDbSet)
-                {
-                    list.Add(student);
-                }
+                list.AddRange(dbContext.StudentsDbSet);
             }
             return list;
         }

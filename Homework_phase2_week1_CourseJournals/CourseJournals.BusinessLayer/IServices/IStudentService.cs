@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using CourseJournals.BusinessLayer.Dtos;
 
-namespace CourseJournals.BusinessLayer.Services
+namespace CourseJournals.BusinessLayer.IServices
 {
     public interface IStudentService
     {

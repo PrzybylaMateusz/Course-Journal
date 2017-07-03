@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using CourseJournals.BusinessLayer.Dtos;
+using CourseJournals.BusinessLayer.IServices;
 using CourseJournals.BusinessLayer.Mappers;
-using CourseJournals.DataLayer;
+using CourseJournals.DataLayer.Interfaces;
 using CourseJournals.DataLayer.Repositories;
 using Newtonsoft.Json;
 
@@ -11,10 +13,10 @@ namespace CourseJournals.BusinessLayer.Services
 {
     public class CourseService : ICourseService
     {
-        private ICoursesRepository _courseRepository;
-        private IStudentService _studentService;
-        private IAttendanceService _attendanceService;
-        private IHomeworkService _homeworkService;
+        private readonly ICoursesRepository _courseRepository;
+        private readonly IStudentService _studentService;
+        private readonly IAttendanceService _attendanceService;
+        private readonly IHomeworkService _homeworkService;
 
         public CourseService(ICoursesRepository coursesRepository, IStudentService studentService,
             IAttendanceService attendanceService, IHomeworkService homeworkService)
@@ -27,7 +29,7 @@ namespace CourseJournals.BusinessLayer.Services
 
         public void SaveReportDataToFile(ReportDto report)
         {
-            string filepath = Environment.CurrentDirectory + "report.json";
+            var filepath = Environment.CurrentDirectory + "report.json";
             File.WriteAllText(filepath, JsonConvert.SerializeObject(report));
         }
 
@@ -49,18 +51,13 @@ namespace CourseJournals.BusinessLayer.Services
 
         public Dictionary<int, string> GetAllCoursesNames()
         {
-            var result = new Dictionary<int, string>();
             var allCourses = _courseRepository.GetAllCourses();
-            foreach (var course in allCourses)
-            {
-                result.Add(course.Id, course.CourseName);
-            }
-            return result;
+            return allCourses.ToDictionary(course => course.Id, course => course.CourseName);
         }
 
         public CourseDto GetCourseDataById(string courseId)
         {
-            var course = _courseRepository.GetCoursesDataById(Int32.Parse(courseId));
+            var course = _courseRepository.GetCoursesDataById(int.Parse(courseId));
             return EntityToDtoMapper.CourseEntityModelToDto(course);
         }
 
@@ -90,18 +87,17 @@ namespace CourseJournals.BusinessLayer.Services
 
         public void ChangeCourseData(CourseDto courseDto, string id)
         {
-            _courseRepository.ChangeCourseData(DtoToEntityMapper.CourseDtoEntityModel(courseDto), Int32.Parse(id));
+            _courseRepository.ChangeCourseData(DtoToEntityMapper.CourseDtoEntityModel(courseDto), int.Parse(id));
         }
 
         public void RemoveStudentFromCourse(string id, long pesel)
         {
-            _courseRepository.RemoveStudentFromCourse(Int32.Parse(id), pesel);
+            _courseRepository.RemoveStudentFromCourse(int.Parse(id), pesel);
         }
 
         public ReportDto GetReportInfo(string courseId)
         {
-            var report = new ReportDto();
-            report.CourseInfo = GetCourseDataById(courseId);
+            var report = new ReportDto { CourseInfo = GetCourseDataById(courseId) };
             var attendanceList = new List<AttendanceResultDto>();
             var listOfAttendance = _attendanceService.GetAttendanceList(courseId);
             var studentFromCourse = _studentService.GetStudentsList(courseId);
@@ -109,8 +105,10 @@ namespace CourseJournals.BusinessLayer.Services
 
             foreach (var student in studentFromCourse)
             {
-                var attendance = new AttendanceResultDto();
-                attendance.StudentsInfo = student.Name + " " + student.Surname + " " + student.Pesel;
+                var attendance = new AttendanceResultDto
+                {
+                    StudentsInfo = student.Name + " " + student.Surname + " " + student.Pesel
+                };
                 var listOfPresent = _attendanceService.GetMeListOfPresents(student.Pesel);
                 attendance.AttendancePoints =
                     _attendanceService.AttendancePoints(student.Pesel, listOfPresent, listOfAttendance);
@@ -118,14 +116,8 @@ namespace CourseJournals.BusinessLayer.Services
                 attendance.AttendancePercents =
                     _attendanceService.CalculateProcenteAttendance(attendance.MaxAttendancePoints,
                         attendance.AttendancePoints);
-                if (attendance.AttendancePercents > report.CourseInfo.MinimalTresholdAttendance)
-                {
-                    attendance.Results = "Passed";
-                }
-                else
-                {
-                    attendance.Results = "Failed";
-                }
+                attendance.Results = attendance.AttendancePercents >
+                    report.CourseInfo.MinimalTresholdAttendance ? "Passed" : "Failed";
                 attendanceList.Add(attendance);
             }
             report.AttendanceResults = attendanceList;
@@ -135,22 +127,18 @@ namespace CourseJournals.BusinessLayer.Services
             var maxHomeworkPoints = _homeworkService.MaxPoints(listOfHomeworks);
             foreach (var student in studentFromCourse)
             {
-                var homework = new HomeworkResultDto();
-                homework.StudentsInfo = student.Name + " " + student.Surname + " " + student.Pesel;
+                var homework = new HomeworkResultDto
+                {
+                    StudentsInfo = student.Name + " " + student.Surname + " " + student.Pesel
+                };
                 var listOfHomeworkMarks = _homeworkService.GetListOfHomeworkMarks(student.Pesel);
                 homework.HomeworkPoints =
                     _homeworkService.CalculateStudentHomeworkPoints(listOfHomeworks, student.Pesel,
                         listOfHomeworkMarks);
                 homework.MaxHomeworkPoints = maxHomeworkPoints;
                 homework.HomeworkPercents = homework.HomeworkPoints / homework.MaxHomeworkPoints * 100;
-                if (homework.HomeworkPercents > report.CourseInfo.MinimalTresholdHomework)
-                {
-                    homework.Results = "Passed";
-                }
-                else
-                {
-                    homework.Results = "Failed";
-                }
+                homework.Results = homework.HomeworkPercents >
+                    report.CourseInfo.MinimalTresholdHomework ? "Passed" : "Failed";
                 homewrokList.Add(homework);
             }
             report.HomeworkResults = homewrokList;

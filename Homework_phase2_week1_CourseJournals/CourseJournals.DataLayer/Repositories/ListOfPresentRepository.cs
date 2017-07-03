@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using CourseJournals.DataLayer.DbContexts;
+using CourseJournals.DataLayer.Interfaces;
 using CourseJournals.DataLayer.Models;
 
 namespace CourseJournals.DataLayer.Repositories

@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using CourseJournals.BusinessLayer.Dtos;
 
-namespace CourseJournals.BusinessLayer.Services
+namespace CourseJournals.BusinessLayer.IServices
 {
     public interface IAttendanceService
     {
-        bool CheckIfDataIsInTheDatabase(DateTime date, string Id);
+        bool CheckIfDataIsInTheDatabase(DateTime date, string id);
         bool CheckIfPresentIsCorrectValue(string present);
         bool AddAttendance(AttendanceDto attendanceDto);
         List<AttendanceDto> GetAttendanceList(string courseId);

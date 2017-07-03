@@ -1,15 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using CourseJournals.BusinessLayer.Dtos;
+using CourseJournals.BusinessLayer.IServices;
 using CourseJournals.DataLayer.Repositories;
 using CourseJournals.BusinessLayer.Mappers;
-
+using CourseJournals.DataLayer.Interfaces;
 
 namespace CourseJournals.BusinessLayer.Services
 {
-    public class AttendanceService : IAttendanceService{
-    
-        private IAttendanceRepositores _attendanceRepositores;
+    public class AttendanceService : IAttendanceService
+    {
+        private readonly IAttendanceRepositores _attendanceRepositores;
 
         public AttendanceService(IAttendanceRepositores attendanceRepositores)
         {
@@ -20,30 +22,20 @@ namespace CourseJournals.BusinessLayer.Services
         {
         }
 
-        public bool CheckIfDataIsInTheDatabase(DateTime date, string Id)
+        public bool CheckIfDataIsInTheDatabase(DateTime date, string id)
         {
             var day = _attendanceRepositores.GetDayInSystem(date);
-            
+
             if (day == null || day.Count == 0)
             {
                 return false;
             }
-            foreach (var d in day)
-            {
-                if (d.Id == int.Parse(Id))
-                {
-                    return true;
-                }
-            }
-            return false;
+            return day.Any(d => d.Courses.Id == int.Parse(id));
         }
+
         public bool CheckIfPresentIsCorrectValue(string present)
         {
-            if (present == "Absent" || present == "Present")
-            {
-                return true;
-            }
-            return false;
+            return present == "Absent" || present == "Present";
         }
 
         public bool AddAttendance(AttendanceDto attendanceDto)
@@ -51,21 +43,16 @@ namespace CourseJournals.BusinessLayer.Services
             var attendance = DtoToEntityMapper.AttendanceDtoToEntityModel(attendanceDto);
             return _attendanceRepositores.AddAttendance(attendance);
         }
+
         public List<AttendanceDto> GetAttendanceList(string courseId)
         {
-            var attendanceList = new List<AttendanceDto>();
             var list = _attendanceRepositores.GetAttendanceDays(Int32.Parse(courseId));
-            foreach (var days in list)
-            {
-                AttendanceDto attendance = EntityToDtoMapper.AttendanceEntityModelToDto(days);
-                attendanceList.Add(attendance);
-            }
-            return attendanceList;
+            return list.Select(days => EntityToDtoMapper.AttendanceEntityModelToDto(days)).ToList();
         }
 
         public double CountDaysNumber(List<AttendanceDto> dayList)
         {
-            double totalNumber=0;
+            double totalNumber = 0;
             foreach (var unused in dayList)
             {
                 totalNumber++;
@@ -75,14 +62,8 @@ namespace CourseJournals.BusinessLayer.Services
 
         public List<ListOfPresentDto> GetMeListOfPresents(long pesel)
         {
-            var listOfAllPresents = new List<ListOfPresentDto>();
             var list = _attendanceRepositores.GetListOfAllPresentsAtCourse(pesel);
-            foreach (var record in list)
-            {
-                ListOfPresentDto listOfPresent = EntityToDtoMapper.ListOfPresentsEntityModelToDto(record);
-                listOfAllPresents.Add(listOfPresent);
-            }
-            return listOfAllPresents;
+            return list.Select(EntityToDtoMapper.ListOfPresentsEntityModelToDto).ToList();
         }
 
         public double AttendancePoints(long pesel, List<ListOfPresentDto> list, List<AttendanceDto> attendanceList)
@@ -103,14 +84,14 @@ namespace CourseJournals.BusinessLayer.Services
 
         public double CalculateProcenteAttendance(double daysNumber, double numberOfPoints)
         {
-            double result = (numberOfPoints / daysNumber) * 100;
+            var result = (numberOfPoints / daysNumber) * 100;
             return result;
         }
 
         public AttendanceDto Attendance(string courseId, DateTime date)
         {
             var attendance = new AttendanceDto();
-            var list = _attendanceRepositores.GetAttendanceDays(Int32.Parse(courseId));
+            var list = _attendanceRepositores.GetAttendanceDays(int.Parse(courseId));
             foreach (var days in list)
             {
                 if (days.DayOfClass == date)

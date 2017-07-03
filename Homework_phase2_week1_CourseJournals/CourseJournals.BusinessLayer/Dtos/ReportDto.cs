@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace CourseJournals.BusinessLayer.Dtos
 {
@@ -11,8 +7,5 @@ namespace CourseJournals.BusinessLayer.Dtos
         public CourseDto CourseInfo;
         public List<AttendanceResultDto> AttendanceResults;
         public List<HomeworkResultDto> HomeworkResults;
-
     }
-
-    
 }

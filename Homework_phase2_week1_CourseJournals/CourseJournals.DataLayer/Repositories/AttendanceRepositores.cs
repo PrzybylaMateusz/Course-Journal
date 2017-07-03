@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using CourseJournals.DataLayer.Interfaces;
 
 namespace CourseJournals.DataLayer.Repositories
 {
@@ -14,7 +15,7 @@ namespace CourseJournals.DataLayer.Repositories
             List<Attendance> days;
             using (var dbContext = new CourseJournalsDbContext())
             {
-                days = dbContext.AttendanceDbSet.Where(a => a.DayOfClass == date).ToList();
+                days = dbContext.AttendanceDbSet.Where(a => a.DayOfClass == date).Include(b => b.Courses).ToList();
             }
             return days;
         }

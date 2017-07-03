@@ -1,8 +1,8 @@
-﻿using CourseJournals.BusinessLayer.Services;
+﻿using CourseJournals.BusinessLayer.IServices;
+using CourseJournals.BusinessLayer.Services;
 using Ninject.Modules;
-using CourseJournals.DataLayer;
 
-namespace CourseJournals.BusinessLayer
+namespace CourseJournals.BusinessLayer.Modules
 {
     public class ServicesModule : NinjectModule
     {

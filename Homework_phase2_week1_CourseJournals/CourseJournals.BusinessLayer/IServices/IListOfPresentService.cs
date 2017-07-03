@@ -1,6 +1,6 @@
 ﻿using CourseJournals.BusinessLayer.Dtos;
 
-namespace CourseJournals.BusinessLayer.Services
+namespace CourseJournals.BusinessLayer.IServices
 {
     public interface IListOfPresentService
     {

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using CourseJournals.BusinessLayer.Dtos;
 using CourseJournals.DataLayer.Models;
 
@@ -46,16 +47,7 @@ namespace CourseJournals.BusinessLayer.Mappers
 
         public static List<Student> ListOfStudentDtotoListOfStudent(List<StudentDto> listStudentDto)
         {
-            if (listStudentDto == null)
-            {
-                return null;
-            }
-            List<Student> list = new List<Student>();
-            foreach (var student in listStudentDto)
-            {
-                list.Add(StudentDtoEntityModel(student));
-            }
-            return list;
+            return listStudentDto?.Select(StudentDtoEntityModel).ToList();
         }
 
         public static Attendance AttendanceDtoToEntityModel(AttendanceDto attendanceDto)
@@ -90,12 +82,7 @@ namespace CourseJournals.BusinessLayer.Mappers
 
         public static List<Course> ListOfCoursesDtotoListOfCourses(List<CourseDto> listOfCoursesDto)
         {
-            List<Course> list = new List<Course>();
-            foreach (var course in listOfCoursesDto)
-            {
-                list.Add(CourseDtoEntityModel(course));
-            }
-            return list;
+            return listOfCoursesDto.Select(CourseDtoEntityModel).ToList();
         }
 
         public static Homework HomeworkDtotoHomework(HomeworkDto homeworkDto)
